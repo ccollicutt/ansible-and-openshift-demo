@@ -1,0 +1,6 @@
+---
+
+- name: get webhook
+  uri:
+    url: https://webhook.site/eb1658dc-d339-494a-9482-1a765ee6b699?bind=yes
+

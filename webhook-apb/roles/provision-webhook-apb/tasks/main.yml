@@ -1,0 +1,97 @@
+##############################################################################
+## Provision webhook
+## This role executes much of the needed functionality to provision an
+## application using an Ansible Playbook Bundle.  Included in the comments
+## below are some sample resources for getting started deploying an application
+## to OpenShift.
+##############################################################################
+
+- name: get webhook
+  uri:
+    url: https://webhook.site/eb1658dc-d339-494a-9482-1a765ee6b699?provision=yes
+
+- name: encode bind credentials
+  asb_encode_binding:
+    fields:
+      WEBHOOK_RESULT: "elephant"
+
+
+##############################################################################
+## An OpenShift Origin deployment configuration provides a replication
+## controller, spins up pods, and also provides the ability to transition from
+## one deployment of an image to a new one.
+## https://docs.openshift.org/latest/architecture/core_concepts/deployments.html#deployments-and-deployment-configurations
+##############################################################################
+#- name: create deployment config
+#  openshift_v1_deployment_config:
+#    name: webhook
+#    namespace: '{{ namespace }}'
+#    labels:
+#      app: webhook
+#      service: webhook
+#    replicas: 1
+#    selector:
+#      app: webhook
+#      service: webhook
+#    spec_template_metadata_labels:
+#      app: webhook
+#      service: webhook
+#    containers:
+#    - env:
+#      image: docker.io/ansibleplaybookbundle/hello-world:latest # replace with your application image
+#      name: webhook
+#      ports:
+#      - container_port: 8080
+#        protocol: TCP
+
+
+##############################################################################
+## A Kubernetes service serves as an internal load balancer.  It identifies a
+## set of replicated pods in order to proxy the connections it receives to them.
+## https://docs.openshift.org/latest/architecture/core_concepts/pods_and_services.html#services
+##############################################################################
+#- name: create webhook service
+#  k8s_v1_service:
+#    name: webhook
+#    namespace: '{{ namespace }}'
+#    labels:
+#      app: webhook
+#      service: webhook
+#    selector:
+#      app: webhook
+#      service: webhook
+#    ports:
+#      - name: web
+#        port: 80
+#        target_port: 8080
+
+
+##############################################################################
+## An OpenShift Origin route exposes a service at a host name, so that external
+## clients can reach it by name. Each route consists of a name, a service
+## selector, and an optional security configuration.
+## https://docs.openshift.org/latest/architecture/networking/routes.html
+##############################################################################
+#- name: create webhook route
+#  openshift_v1_route:
+#    name: webhook
+#    namespace: '{{ namespace }}'
+#    labels:
+#      app: webhook
+#      service: webhook
+#    to_name: webhook
+#    spec_port_target_port: web
+
+
+
+##############################################################################
+## Bindable services must make credentials available to the Ansible Service
+## Broker during the provision stage.  They will later be made available to
+## applications after a binding is created.
+## https://github.com/kubernetes-incubator/service-catalog/blob/master/docs/design.md#using-a-service-instance
+##############################################################################
+#- name: encode bind credentials
+#  asb_encode_binding:
+#    fields:
+#      ENV_VAR_1: value1
+#      ENV_VAR_2: value2
