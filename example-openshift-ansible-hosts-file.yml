@@ -1,0 +1,81 @@
+# Create an OSEv3 group that contains the masters and nodes groups
+[OSEv3:children]
+masters
+nodes
+
+
+# Set variables common for all OSEv3 hosts
+[OSEv3:vars]
+debug_level=2
+ansible_ssh_user=centos
+ansible_become=true
+openshift_deployment_type=origin
+#openshift_release=v3.11
+openshift_master_api_port=443
+openshift_master_console_port=443
+openshift_portal_net=172.30.0.0/16
+# NOTE(curtis): not sure
+os_sdn_network_plugin_name='redhat/openshift-ovs-networkpolicy'
+# Native HA with External LB VIPs
+openshift_master_cluster_method=native
+openshift_examples_modify_imagestreams=true
+
+#openshift_cloudprovider_kind=aws
+#openshift_cloudprovider_aws_access_key=<redacted>
+#openshift_cloudprovider_aws_secret_key=<redacted>
+
+openshift_hosted_manage_registry=true
+openshift_hosted_registry_storage_kind=object
+openshift_hosted_registry_storage_provider=s3
+openshift_hosted_registry_storage_s3_accesskey=<redacted>
+openshift_hosted_registry_storage_s3_secretkey=<redacted>
+openshift_hosted_registry_storage_s3_bucket=openshift-1-registry
+openshift_hosted_registry_storage_s3_region=ca-central-1
+openshift_hosted_registry_storage_s3_chunksize=26214400
+openshift_hosted_registry_storage_s3_rootdirectory=/registry
+openshift_hosted_registry_pullthrough=true
+openshift_hosted_registry_acceptschema2=true
+openshift_hosted_registry_enforcequota=true
+openshift_hosted_registry_replicas=3
+
+openshift_enable_service_catalog=true
+template_service_broker_install=true
+
+openshift_master_identity_providers=[{'name': 'htpasswd_auth', 'login': 'true', 'challenge': 'true', 'kind': 'HTPasswdPasswordIdentityProvider'}]
+openshift_master_htpasswd_users={'admin' : '$apr1$Qk0x.NRF$IWQhVNt3sQ1LAoZPuN571.'}
+
+# NOTE(curtis): https://github.com/openshift/openshift-ansible/issues/9875#issuecomment-429967431
+# seems to be missing RPMs in origin...
+openshift_additional_repos=[{'id': 'centos-okd-ci', 'name': 'centos-okd-ci', 'baseurl' :'https://rpms.svc.ci.openshift.org/openshift-origin-v3.11/', 'gpgcheck' :'0', 'enabled' :'1'}]
+
+# Native HA with External LB VIPs
+openshift_master_cluster_method=native
+# FIXME: Names
+#openshift_master_cluster_hostname=controller0
+openshift_master_cluster_public_hostname=shift.idxlabs.net
+
+# set default subdomain
+openshift_master_default_subdomain=apps.idxlabs.net
+openshift_clusterid=openshift-1
+#openshift_hostname_check=false
+
+# host group for masters
+[masters]
+controller0
+
+# host group for etcd
+[etcd]
+controller0
+
+# host group for nodes, includes region info
+# NOTE(curtis): was getting an openshift_hostname error I think because the IP is not resolving properly
+# in aws at this time, though I am setting up internal DNS...
+[nodes]
+
+controller0 ansible_ssh_host=172.20.0.53 openshift_node_group_name='node-config-master' #openshift_schedulable=false
+
+worker0     ansible_ssh_host=172.20.1.82     openshift_node_group_name='node-config-compute' #openshift_node_labels="{'region': 'primary', 'zone': 'default'}"
+
+worker1     ansible_ssh_host=172.20.1.199     openshift_node_group_name='node-config-compute' #openshift_node_labels="{'region': 'primary', 'zone': 'default'}"
+
+router0     ansible_ssh_host=172.20.0.149     openshift_node_group_name='node-config-infra' #openshift_node_labels="{'region': 'infra', 'zone': 'default'}"
