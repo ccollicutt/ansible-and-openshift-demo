@@ -255,10 +255,6 @@ oc cluster up --routing-suffix=oc.example.com --public-hostname=oc.example.com -
 ```
 
 ```
-oc cluster up --routing-suffix=oc2.idxlabs.net --public-hostname=oc2.idxlabs.net --enable=service-catalog,router,registry,web-console,persistent-volumes,rhel-imagestreams,automation-service-broker
-```
-
-```
 oc adm policy add-cluster-role-to-user cluster-admin developer
 ```
 
