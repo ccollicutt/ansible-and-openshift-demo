@@ -1,0 +1,5 @@
+---
+
+plugin: k8s
+connections:
+  - kubeconfig: "/root/.kube/config"
