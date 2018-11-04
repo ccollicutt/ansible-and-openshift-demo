@@ -2,7 +2,16 @@
 
 This is just a set of notes to get an OpenShift demo up and running with `oc cluster up`. They may not be complete, and also might be wrong. They're just notes. :) Sorry!
 
-## Install
+## Ansible Playbook Bundles
+
+[Example APB](webhook-apb).
+
+## Ansible k8s Modules
+
+[Example Ansible k8s module usage](ansible-k8s)
+
+
+## Install OpenShift/OKD Cluster with cluster up
 
 * Docs: https://github.com/openshift/origin/blob/master/docs/cluster_up_down.md
 
@@ -141,7 +150,12 @@ systemctl restart docker
 Check IP range.
 
 ```
-[root@oc ~]# docker network inspect -f "{{range .IPAM.Config }}{{ .Subnet }}{{end}}" bridge
+docker network inspect -f "{{range .IPAM.Config }}{{ .Subnet }}{{end}}" bridge
+```
+
+output:
+
+```
 172.17.0.0/16
 ```
 
@@ -238,6 +252,21 @@ With hostname...
 
 ```
 oc cluster up --routing-suffix=oc.example.com --public-hostname=oc.example.com --enable=service-catalog,router,registry,web-console,persistent-volumes,rhel-imagestreams,automation-service-broker
+```
+
+```
+oc cluster up --routing-suffix=oc2.idxlabs.net --public-hostname=oc2.idxlabs.net --enable=service-catalog,router,registry,web-console,persistent-volumes,rhel-imagestreams,automation-service-broker
+```
+
+```
+oc adm policy add-cluster-role-to-user cluster-admin developer
+```
+
+Disable ipv6.
+
+```
+sysctl -w net.ipv6.conf.all.disable_ipv6=1 
+sysctl -w net.ipv6.conf.default.disable_ipv6=1
 ```
 
 *NOTE: `oc cluster up` configures with an allow all password, so anyone can login with developer or admin with NO PASSWORD!*
